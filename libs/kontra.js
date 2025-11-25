@@ -1,3 +1,4 @@
+
 /**
  * @preserve
  * Kontra.js v10.0.2
@@ -371,7 +372,7 @@ let focusParams = { preventScroll: true };
 function addToDom(node, canvas) {
   let container = canvas.parentNode;
 
-  node.setAttribute('data-kontra', '');
+  // node.setAttribute('data-kontra', '');
   if (container) {
     let target =
       [
@@ -6355,11 +6356,13 @@ class Scene {
     // create an accessible DOM node for screen readers
     // (do this first so we can move DOM nodes in add())
     // dn = dom node
-    let section = (this._dn = document.createElement('section'));
-    section.tabIndex = -1;
-    section.style = srOnlyStyle;
-    section.id = id;
-    section.setAttribute('aria-label', name);
+    let section = {}
+    this._dn = section
+    // let section = (this._dn = document.createElement('section'));
+    // section.tabIndex = -1;
+    // section.style = srOnlyStyle;
+    // section.id = id;
+    // section.setAttribute('aria-label', name);
 
     /**
      * The camera object which is used as the focal point for the scene. Defaults to to the size of the canvas with a focal point  at its center. The scene will not render objects that are outside the bounds of the camera.
@@ -6409,9 +6412,9 @@ class Scene {
         height
       });
 
-      if (!section.isConnected) {
-        addToDom(section, canvas);
-      }
+      // if (!section.isConnected) {
+      //   addToDom(section, canvas);
+      // }
     };
 
     if (this.context) {
@@ -6455,7 +6458,7 @@ class Scene {
       // move all objects to be in the scenes DOM node so we can
       // hide and show the DOM node and thus hide and show all the
       // objects
-      this._dn.append(...getAllNodes(object));
+      // this._dn.push(...getAllNodes(object));
     });
   }
 
