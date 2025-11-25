@@ -1,65 +1,44 @@
-import Sprite from '../base/sprite';
+import TileEngine from '../base/tileEngine';
 import { SCREEN_WIDTH, SCREEN_HEIGHT } from '../render';
 
-const BACKGROUND_IMAGE_SRC = 'images/bg.jpg';
-const BACKGROUND_WIDTH = 512;
-const BACKGROUND_HEIGHT = 512;
-const BACKGROUND_SPEED = 2;
+const TILESET_IMAGE_SRC = 'images/output_tileset.png';
+const TILE_WIDTH = 20;
+const TILE_HEIGHT = 20;
 
+// 计算地图的尺寸（以图块为单位）
+const MAP_WIDTH_IN_TILES = Math.ceil(SCREEN_WIDTH / TILE_WIDTH);
+const MAP_HEIGHT_IN_TILES = Math.ceil(SCREEN_HEIGHT / TILE_HEIGHT);
+
+const randomTile = (tiles, num) => new Array(num).fill(0).map(() => tiles[Math.floor(Math.random() * tiles.length)])
+
+// 使用前4个图块创建一个简单的随机图案
+const mapData = randomTile([67,198],MAP_WIDTH_IN_TILES*MAP_HEIGHT_IN_TILES);
 /**
  * 游戏背景类
- * 提供 update 和 render 函数实现无限滚动的背景功能
+ * 继承自 TileEngine，用于渲染静态背景
  */
-export default class BackGround extends Sprite {
+export default class BackGround extends TileEngine {
   constructor() {
-    super(BACKGROUND_IMAGE_SRC, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
-    this.top = 0;
+    super({
+      tileWidth: TILE_WIDTH,
+      tileHeight: TILE_HEIGHT,
+      width: MAP_WIDTH_IN_TILES,
+      height: MAP_HEIGHT_IN_TILES,
+    });
+
+    this.addLayers({
+      name: 'background',
+      data: mapData,
+    });
+
+    this.addTilesets({
+      firstGrid: 1,
+      image: TILESET_IMAGE_SRC,
+    }).then(() => {
+      this.preRenderImage();
+    });
   }
 
-  update() {
-    if (globalThis.databus.isGameOver) {
-      return;
-    }
-  
-    this.top += BACKGROUND_SPEED;
-
-    // 如果背景滚动超过屏幕高度，则重置
-    if (this.top >= SCREEN_HEIGHT) {
-      this.top = 0;
-    }
-  }
-
-  /**
-   * 背景图重绘函数
-   * 绘制两张图片，两张图片大小和屏幕一致
-   * 第一张漏出高度为 top 部分，其余的隐藏在屏幕上面
-   * 第二张补全除了 top 高度之外的部分，其余的隐藏在屏幕下面
-   */
-  render(ctx) {
-    // 绘制第一张背景
-    ctx.drawImage(
-      this.img,
-      0,
-      0,
-      this.width,
-      this.height,
-      0,
-      -SCREEN_HEIGHT + this.top,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT
-    );
-
-    // 绘制第二张背景
-    ctx.drawImage(
-      this.img,
-      0,
-      0,
-      this.width,
-      this.height,
-      0,
-      this.top,
-      SCREEN_WIDTH,
-      SCREEN_HEIGHT
-    );
-  }
+  // 背景是静态的，所以 update 方法为空
+  update() {}
 }
