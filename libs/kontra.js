@@ -13,8 +13,6 @@
  * @sectionName Helpers
  */
 
-const adapter = require("./adapter");
-
 /**
  * Convert degrees to radians.
  * @function degToRad
@@ -371,7 +369,6 @@ let focusParams = { preventScroll: true };
  * @param {HTMLCanvasElement} canvas - Canvas to append after.
  */
 function addToDom(node, canvas) {
-  console.log('addToDom')
   let container = canvas.parentNode;
 
   node.setAttribute('data-kontra', '');
@@ -561,7 +558,7 @@ function init$1(canvas, { contextless = false } = {}) {
   // check if canvas is a string first, an element next, or default to
   // getting first canvas on page
   canvasEl =
-    // document.getElementById(canvas) || 
+    document.getElementById(canvas) ||
     canvas ||
     document.querySelector('canvas');
 
@@ -4035,14 +4032,14 @@ function GameLoop({
   let last, rAF, now, dt, loop;
   let focused = true;
 
-  // if (!blur) {
-  //   window.addEventListener('focus', () => {
-  //     focused = true;
-  //   });
-  //   window.addEventListener('blur', () => {
-  //     focused = false;
-  //   });
-  // }
+  if (!blur) {
+    window.addEventListener('focus', () => {
+      focused = true;
+    });
+    window.addEventListener('blur', () => {
+      focused = false;
+    });
+  }
 
   on('init', () => {
     loop.context ??= getContext();
@@ -6966,8 +6963,6 @@ function getCol(x, tilewidth) {
 class TileEngine {
   constructor(properties = {}) {
     let {
-      canvas,
-      ctx,
       /**
        * The width of tile map (in tiles).
        * @memberof TileEngine
@@ -7014,73 +7009,73 @@ class TileEngine {
 
     // create an off-screen canvas for pre-rendering the map
     // @see http://jsperf.com/render-vs-prerender
-    // let canvas = getCanvas();
-    canvas.zIndex = 100;
+    let canvas = document.createElement('canvas');
     canvas.width = mapwidth;
     canvas.height = mapheight;
 
     // c = canvas, ctx = context
     this._c = canvas;
-    this._ctx = ctx;
+    this._ctx = canvas.getContext('2d');
 
     // @ifdef TILEENGINE_TILED
     // resolve linked files (source, image)
-    // tilesets.map(tileset => {
-    //   // get the url of the Tiled JSON object (in this case, the
-    //   // properties object)
-    //   // let { __k, location } = globalThis;
-    //   // let url = (__k ? __k.dm.get(properties) : '') || location.href;
+    tilesets.map(tileset => {
+      // get the url of the Tiled JSON object (in this case, the
+      // properties object)
+      let { __k, location } = window;
+      let url = (__k ? __k.dm.get(properties) : '') || location.href;
 
-    //   // let { source } = tileset;
-    //   // if (source) {
-    //   //   // @ifdef DEBUG
-    //   //   if (!__k) {
-    //   //     throw Error(
-    //   //       `You must use "load" or "loadData" to resolve tileset.source`
-    //   //     );
-    //   //   }
-    //   //   // @endif
+      let { source } = tileset;
+      if (source) {
+        // @ifdef DEBUG
+        if (!__k) {
+          throw Error(
+            `You must use "load" or "loadData" to resolve tileset.source`
+          );
+        }
+        // @endif
 
-    //   //   let resolvedSorce = __k.d[__k.u(source, url)];
+        let resolvedSorce = __k.d[__k.u(source, url)];
 
-    //   //   // @ifdef DEBUG
-    //   //   if (!resolvedSorce) {
-    //   //     throw Error(
-    //   //       `You must load the tileset source "${source}" before loading the tileset`
-    //   //     );
-    //   //   }
-    //   //   // @endif
+        // @ifdef DEBUG
+        if (!resolvedSorce) {
+          throw Error(
+            `You must load the tileset source "${source}" before loading the tileset`
+          );
+        }
+        // @endif
 
-    //   //   Object.keys(resolvedSorce).map(key => {
-    //   //     tileset[key] = resolvedSorce[key];
-    //   //   });
-    //   // }
+        Object.keys(resolvedSorce).map(key => {
+          tileset[key] = resolvedSorce[key];
+        });
+      }
 
-    //   // let { image } = tileset;
-    //   /* eslint-disable-next-line no-restricted-syntax */
-    //   // if ('' + image === image) {
-    //   //   // @ifdef DEBUG
-    //   //   // if (!__k) {
-    //   //   //   throw Error(
-    //   //   //     `You must use "load" or "loadImage" to resolve tileset.image`
-    //   //   //   );
-    //   //   // }
-    //   //   // // @endif
+      let { image } = tileset;
+      /* eslint-disable-next-line no-restricted-syntax */
+      if ('' + image === image) {
+        // @ifdef DEBUG
+        if (!__k) {
+          throw Error(
+            `You must use "load" or "loadImage" to resolve tileset.image`
+          );
+        }
+        // @endif
 
-    //   //   // let resolvedImage = __k.i[__k.u(image, url)];
+        let resolvedImage = __k.i[__k.u(image, url)];
 
-    //   //   // // @ifdef DEBUG
-    //   //   // if (!resolvedImage) {
-    //   //   //   throw Error(
-    //   //   //     `You must load the image "${image}" before loading the tileset`
-    //   //   //   );
-    //   //   // }
-    //   //   // @endif
+        // @ifdef DEBUG
+        if (!resolvedImage) {
+          throw Error(
+            `You must load the image "${image}" before loading the tileset`
+          );
+        }
+        // @endif
 
-    //   //   tileset.image = resolvedImage;
-    //   // }
-    // });
+        tileset.image = resolvedImage;
+      }
+    });
     // @endif
+
     // add all properties to the object, overriding any defaults
     Object.assign(this, {
       context: getContext(),
@@ -7122,7 +7117,6 @@ class TileEngine {
     }
 
     on('init', () => {
-      console.log('init')
       this.context ??= getContext();
       this._p();
     });
@@ -7177,7 +7171,6 @@ class TileEngine {
    * @param {...(Object|Object[])[]} objects - Object to add to the tile engine. Can be a single object, an array of objects, or a comma-separated list of objects.
    */
   add(...objects) {
-    console.log('add')
     objects.flat().map(object => {
       this._o.push(object);
       object.parent = this;
@@ -7237,7 +7230,6 @@ class TileEngine {
    * @returns {{x: Number, y: Number, row: Number, col: Number}} The `x`, `y`, `row`, and `col` of the pointer event within the tile engine.
    */
   getPosition(event) {
-    console.log('getPosition')
     let rect = getCanvas().getBoundingClientRect();
     let x = event.x - rect.x;
     let y = event.y - rect.y;
@@ -7476,21 +7468,21 @@ class TileEngine {
       this._p();
     }
 
-    // let { width, height } = getCanvas();
-    let sWidth = _canvas.width;
-    let sHeight = _canvas.height;
-    console.log('tile')
-    // context.drawImage(
-    //   _canvas,
-    //   sx,
-    //   sy,
-    //   sWidth,
-    //   sHeight,
-    //   0,
-    //   0,
-    //   sWidth,
-    //   sHeight
-    // );
+    let { width, height } = getCanvas();
+    let sWidth = Math.min(_canvas.width, width);
+    let sHeight = Math.min(_canvas.height, height);
+
+    context.drawImage(
+      _canvas,
+      sx,
+      sy,
+      sWidth,
+      sHeight,
+      0,
+      0,
+      sWidth,
+      sHeight
+    );
 
     // @ifdef TILEENGINE_CAMERA
     // draw objects
@@ -7508,7 +7500,6 @@ class TileEngine {
 
       context.restore();
     }
-    console.log('render')
     // @endif
   }
 
@@ -7529,7 +7520,7 @@ class TileEngine {
       // cache the rendered layer so we can render it again without
       // redrawing all tiles
       let { mapwidth, mapheight } = this;
-      canvas = adapter.createCanvas();
+      canvas = document.createElement('canvas');
       context = canvas.getContext('2d');
       canvas.width = mapwidth;
       canvas.height = mapheight;
@@ -7546,7 +7537,7 @@ class TileEngine {
     }
     // @endif
 
-    // this.render(canvas, false);
+    this.render(canvas, false);
   }
 
   /**
@@ -7567,7 +7558,6 @@ class TileEngine {
         this._rl(layer, _ctx);
       }
     });
-    console.log('_p');
   }
 
   /**
@@ -7577,13 +7567,12 @@ class TileEngine {
    * @param {Context} context - Context to draw layer to.
    */
   _rl(layer, context) {
-    console.log('_rl')
     let { opacity, data = [] } = layer;
     let { tilesets, width, tilewidth, tileheight } = this;
 
     context.save();
     context.globalAlpha = opacity;
-    console.log('_rl')
+
     data.map((tile, index) => {
       // skip empty tiles (0)
       if (!tile) return;
@@ -7689,16 +7678,7 @@ class TileEngine {
         y = flipped ? 0 : y;
       }
       // @endif
-      console.log('drawImage')
-      console.log({
-        image,
-        sx,
-        sy,
-        tilewidth,
-        tileheight,
-        x,
-        y,
-      })
+
       context.drawImage(
         image,
         sx,
@@ -7711,13 +7691,14 @@ class TileEngine {
         tileheight
       );
 
-      // // @ifdef TILEENGINE_TILED
-      // if (flipped || rotated) {
-      //   context.restore();
-      // }
+      // @ifdef TILEENGINE_TILED
+      if (flipped || rotated) {
+        context.restore();
+      }
       // @endif
     });
-    // context.restore();
+
+    context.restore();
   }
 }
 
