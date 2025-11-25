@@ -1,4 +1,4 @@
-const adapter = typeof wx !== 'undefined' ? wx : tt;
+globalThis.adapter = typeof wx !== 'undefined' ? wx : tt;
 if (!globalThis.Image) {
   globalThis.Image = () => adapter.createImage();
 }
