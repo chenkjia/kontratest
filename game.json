@@ -1,0 +1,7 @@
+{
+  "deviceOrientation": "portrait",
+  "networkTimeout": { "request": 5000 },
+  "version": "1.0.0",
+  "resizable": true,
+  "usingComponents": {}
+}
