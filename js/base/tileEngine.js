@@ -1,9 +1,5 @@
 import Emitter from '../libs/tinyemitter';
 
-const __ = {
-  poolDic: Symbol('poolDic'),
-};
-
 /**
  * 微信小程序的TileEngine实现
  */
